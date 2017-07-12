@@ -5,22 +5,25 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 )
 
 // These are the paramters to use when you want Twilio to use callback urls.
 // See http://www.twilio.com/docs/api/rest/making-calls for more info.
 type CallbackParameters struct {
-	Url                  string // Required
-	Method               string // Optional
-	FallbackUrl          string // Optional
-	FallbackMethod       string // Optional
-	StatusCallback       string // Optional
-	StatusCallbackMethod string // Optional
-	SendDigits           string // Optional
-	IfMachine            string // False, Continue or Hangup; http://www.twilio.com/docs/errors/21207
-	Timeout              int    // Optional
-	Record               bool   // Optional
+	Url                  string   // Required
+	Method               string   // Optional
+	FallbackUrl          string   // Optional
+	FallbackMethod       string   // Optional
+	StatusCallback       string   // Optional
+	StatusCallbackMethod string   // Optional
+	StatusCallbackEvent  []string // Optional
+	SendDigits           string   // Optional
+	Timeout              int      // Optional
+	Record               bool     // Optional
+	RecordingChannels    string   // Optional
+	MachineDetection     string   // Optional
 }
 
 // VoiceResponse contains the details about successful voice calls.
@@ -107,8 +110,8 @@ func (twilio *Twilio) CallWithUrlCallbacks(from, to string, callbackParameters *
 	if callbackParameters.SendDigits != "" {
 		formValues.Set("SendDigits", callbackParameters.SendDigits)
 	}
-	if callbackParameters.IfMachine != "" {
-		formValues.Set("IfMachine", callbackParameters.IfMachine)
+	if callbackParameters.MachineDetection != "" {
+		formValues.Set("MachineDetection", callbackParameters.MachineDetection)
 	}
 	if callbackParameters.Timeout != 0 {
 		formValues.Set("Timeout", strconv.Itoa(callbackParameters.Timeout))
@@ -117,6 +120,19 @@ func (twilio *Twilio) CallWithUrlCallbacks(from, to string, callbackParameters *
 		formValues.Set("Record", "true")
 	} else {
 		formValues.Set("Record", "false")
+	}
+
+	if callbackParameters.RecordingChannels != "" {
+		formValues.Set("RecordingChannels", callbackParameters.RecordingChannels)
+	}
+
+	events := strings.Join(callbackParameters.StatusCallbackEvent, " ")
+	if len(callbackParameters.StatusCallbackEvent) > 0 {
+		formValues.Set("StatusCallbackEvent", events)
+	}
+
+	for _, ev := range callbackParameters.StatusCallbackEvent {
+		formValues.Add("StatusCallbackEvent", ev)
 	}
 
 	return twilio.voicePost(formValues)
