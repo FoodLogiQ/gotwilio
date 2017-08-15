@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -124,11 +123,6 @@ func (twilio *Twilio) CallWithUrlCallbacks(from, to string, callbackParameters *
 
 	if callbackParameters.RecordingChannels != "" {
 		formValues.Set("RecordingChannels", callbackParameters.RecordingChannels)
-	}
-
-	events := strings.Join(callbackParameters.StatusCallbackEvent, " ")
-	if len(callbackParameters.StatusCallbackEvent) > 0 {
-		formValues.Set("StatusCallbackEvent", events)
 	}
 
 	for _, ev := range callbackParameters.StatusCallbackEvent {
